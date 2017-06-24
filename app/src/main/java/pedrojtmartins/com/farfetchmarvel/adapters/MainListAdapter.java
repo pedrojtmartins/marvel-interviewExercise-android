@@ -22,8 +22,8 @@ public class MainListAdapter extends ObservableAdapter<MarvelModel.Character> {
 
     private IItemInteraction<MarvelModel.Character> callback;
 
-    public MainListAdapter(ObservableArrayList<MarvelModel.Character> items, IItemInteraction<MarvelModel.Character> callback) {
-        super(items);
+    public MainListAdapter(ObservableArrayList<MarvelModel.Character> items, IItemInteraction<MarvelModel.Character> callback, ObservableInt currPage) {
+        super(items, currPage);
         this.callback = callback;
     }
 

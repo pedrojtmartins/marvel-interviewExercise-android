@@ -3,6 +3,15 @@
         xmlns:tools="http://schemas.android.com/tools"
         tools:context="pedrojtmartins.com.farfetchmarvel.views.fragments.ListFragment">
 
+    <data>
+
+        <variable
+            name="data"
+            type="pedrojtmartins.com.farfetchmarvel.models.MainStatus"/>
+
+        <import type="android.view.View"/>
+    </data>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -17,20 +26,54 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="end|center_vertical"
             android:orientation="horizontal">
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:visibility="@{data.loadingCharacters ? View.VISIBLE : View.GONE}"/>
 
             <Button
                 android:id="@+id/previousPage"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/left_arrow"
+                android:enabled="@{data.loadingCharacters ? false : true}"/>
+
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="previous"/>
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:gravity="center_vertical"
+                android:text="@{data.currPageString}"
+                tools:text="1"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="@string/pageStringSeperator"
+                tools:text="/"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_marginRight="16dp"
+                android:gravity="center_vertical"
+                android:text="@{data.availablePages}"
+                tools:text="12"/>
 
             <Button
                 android:id="@+id/nextPage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="next"/>
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/right_arrow"
+                android:enabled="@{data.loadingCharacters ? false : true}"/>
         </LinearLayout>
-
     </LinearLayout>
 </layout>

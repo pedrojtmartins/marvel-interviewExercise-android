@@ -3,6 +3,7 @@ package pedrojtmartins.com.farfetchmarvel.views.fragments;
 import android.app.Fragment;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
+import android.databinding.Observable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,6 +16,7 @@ import pedrojtmartins.com.farfetchmarvel.adapters.MainListAdapter;
 import pedrojtmartins.com.farfetchmarvel.databinding.FragmentListBinding;
 import pedrojtmartins.com.farfetchmarvel.interfaces.IItemInteraction;
 import pedrojtmartins.com.farfetchmarvel.interfaces.IListCallback;
+import pedrojtmartins.com.farfetchmarvel.models.MainStatus;
 import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
 
 /**
@@ -25,7 +27,6 @@ import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
 public class ListFragment extends Fragment implements IItemInteraction<MarvelModel.Character> {
 
     private FragmentListBinding binding;
-    private MainListAdapter adapter;
     private IListCallback callback;
 
     @Nullable
@@ -36,13 +37,13 @@ public class ListFragment extends Fragment implements IItemInteraction<MarvelMod
         binding.nextPage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClick_nextPage(v);
+                callback.nextPage();
             }
         });
         binding.previousPage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClick_previousPage(v);
+                callback.previousPage();
             }
         });
 
@@ -53,10 +54,18 @@ public class ListFragment extends Fragment implements IItemInteraction<MarvelMod
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        adapter = new MainListAdapter(callback.getItems(), this);
+        MainStatus status = callback.getMainListBindable();
+        binding.setData(status);
 
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        binding.recyclerView.setAdapter(adapter);
+        binding.recyclerView.setAdapter(new MainListAdapter(callback.getItems(), this, status.getCurrPageObservable()));
+
+        status.getCurrPageObservable().addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
+            @Override
+            public void onPropertyChanged(Observable sender, int propertyId) {
+                binding.recyclerView.scrollToPosition(0);
+            }
+        });
     }
 
     @Override
@@ -72,16 +81,5 @@ public class ListFragment extends Fragment implements IItemInteraction<MarvelMod
     @Override
     public void onItemClick(MarvelModel.Character item) {
         callback.onItemClick(item);
-    }
-
-    public void onClick_previousPage(View v) {
-        adapter.previousPage();
-    }
-
-    public void onClick_nextPage(View v) {
-        if (!adapter.nextPage()) {
-            //The characters are not cached. Warn the callback to handle it.
-            callback.loadMoreCharacters();
-        }
     }
 }

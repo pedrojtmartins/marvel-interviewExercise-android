@@ -5,8 +5,10 @@ import android.databinding.ObservableBoolean;
 import android.support.annotation.NonNull;
 
 import pedrojtmartins.com.farfetchmarvel.api.MarvelAPI;
+import pedrojtmartins.com.farfetchmarvel.models.MainStatus;
 import pedrojtmartins.com.farfetchmarvel.models.MarvelDetails;
 import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
+import pedrojtmartins.com.farfetchmarvel.settings.Settings;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -20,6 +22,8 @@ import static pedrojtmartins.com.farfetchmarvel.settings.Settings.PAGINATION_ITE
  */
 
 public class MainViewModel {
+
+    public MainStatus mainStatus;
 
     // Main variable that holds the characters that are ready to be displayed.
     private ObservableArrayList<MarvelModel.Character> characters;
@@ -42,6 +46,8 @@ public class MainViewModel {
         tempCharacters = new ObservableArrayList<>();
 
         selectedCharacterDetails = new ObservableArrayList<>();
+
+        mainStatus = new MainStatus();
     }
 
     /**
@@ -55,14 +61,42 @@ public class MainViewModel {
         }
     }
 
+    public void previousPage() {
+        if (mainStatus.getCurrPage() <= 0)
+            return;
+
+        mainStatus.setCurrPage(mainStatus.getCurrPage() - 1);
+    }
+
+    public void nextPage() {
+        int currTargetPage = mainStatus.getCurrPage() + 1;
+        int firstTargetIndex = currTargetPage * Settings.PAGINATION_ITEMS_COUNT;
+
+        if (characters.size() > firstTargetIndex) {
+            // We already have the characters cached. Just update the current page
+            mainStatus.setCurrPage(mainStatus.getCurrPage() + 1);
+        } else {
+            // The target characters are not cached. Download them.
+            downloadCharacters();
+        }
+    }
+
     private void downloadCharacters() {
+        mainStatus.setLoadingCharacters(true);
         MarvelAPI.getInstance().getCharacters(PAGINATION_ITEMS_COUNT, characters.size()).enqueue(new Callback<MarvelModel>() {
             @Override
             public void onResponse(@NonNull Call<MarvelModel> call, @NonNull Response<MarvelModel> response) {
+                mainStatus.setLoadingCharacters(false);
                 if (response.isSuccessful()) {
                     MarvelModel apiResponse = response.body();
                     if (apiResponse != null && apiResponse.data != null && apiResponse.data.characters != null) {
+                        if (characters.size() == 0) {
+                            // If this is the first call, find out how many pages there are.
+                            mainStatus.setAvailablePages((int) Math.ceil((double) apiResponse.data.total / Settings.PAGINATION_ITEMS_COUNT));
+                        }
+
                         characters.addAll(apiResponse.data.characters);
+                        mainStatus.setCurrPage(mainStatus.getCurrPage() + 1);
                         return;
                     }
                 } else {
@@ -71,6 +105,7 @@ public class MainViewModel {
             }
             @Override
             public void onFailure(Call<MarvelModel> call, Throwable t) {
+                mainStatus.setLoadingCharacters(false);
                 // TODO: 20/06/2017 display error msg
             }
         });
@@ -278,5 +313,6 @@ public class MainViewModel {
             });
         }
     }
+
 
 }

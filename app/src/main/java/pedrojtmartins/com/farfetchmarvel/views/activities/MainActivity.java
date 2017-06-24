@@ -16,6 +16,7 @@ import pedrojtmartins.com.farfetchmarvel.R;
 import pedrojtmartins.com.farfetchmarvel.databinding.ActivityMainBinding;
 import pedrojtmartins.com.farfetchmarvel.interfaces.IDetailsCallback;
 import pedrojtmartins.com.farfetchmarvel.interfaces.IListCallback;
+import pedrojtmartins.com.farfetchmarvel.models.MainStatus;
 import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
 import pedrojtmartins.com.farfetchmarvel.viewmodels.MainViewModel;
 import pedrojtmartins.com.farfetchmarvel.views.fragments.DetailsFragment;
@@ -92,6 +93,19 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
                 .replace(R.id.fragment_container, detailsFragment)
                 .addToBackStack(null)
                 .commit();
+    }
+    @Override
+    public MainStatus getMainListBindable() {
+        return viewModel.mainStatus;
+    }
+
+    @Override
+    public void previousPage() {
+        viewModel.previousPage();
+    }
+    @Override
+    public void nextPage() {
+        viewModel.nextPage();
     }
 
 
