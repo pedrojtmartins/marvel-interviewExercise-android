@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Farfetch Marvel</string>
+    <string name="search_title">Search</string>
+    <string name="search_hint">Character name</string>
+    <string name="comics">Comics</string>
+    <string name="events">Events</string>
+    <string name="stories">Stories</string>
+    <string name="series">Series</string>
+</resources>
