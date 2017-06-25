@@ -20,6 +20,9 @@ public class SharedPreferencesManager {
         this.sharedPreferences = sharedPreferences;
     }
 
+    /**
+     * @return list of ids of all favourite characters
+     */
     public ArrayList<Long> getFavourites() {
         ArrayList<Long> favourites = new ArrayList<>();
 
@@ -40,6 +43,12 @@ public class SharedPreferencesManager {
         return favourites;
     }
 
+    /**
+     * Adds the new favourite id
+     *
+     * @param favourites character id
+     * @return updated list of ids of all favourite characters
+     */
     public ArrayList<Long> addFavourites(Long favourites) {
         ArrayList<Long> list = getFavourites();
         if (list == null)

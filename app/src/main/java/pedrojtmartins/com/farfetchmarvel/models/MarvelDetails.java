@@ -10,6 +10,7 @@ import java.util.ArrayList;
  */
 
 public class MarvelDetails {
+    // All unused variables are commented for improved serialization performance
 
     @SerializedName("data")
     public Data data;

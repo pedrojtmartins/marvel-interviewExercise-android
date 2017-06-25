@@ -50,15 +50,21 @@ public class DetailsFragment extends Fragment {
 
         requestData();
     }
+
     private void requestData() {
         final MarvelModel.Character character = callback.getSelectedCharacter();
+        if (character == null) {
+            // Will never happen.
+            return;
+        }
 
+        //Bind the character to the UI
         binding.setVariable(BR.model, character);
 
         // Request more information
         callback.getDetails(character);
 
-        // Load cached information (titles)
+        // Inflate layout and load cached information (titles)
         loadComics(character.comics.comicItems);
         loadEvents(character.events.eventItems);
         loadStories(character.stories.storyItems);
@@ -81,6 +87,7 @@ public class DetailsFragment extends Fragment {
             comic.loaded.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
                 @Override
                 public void onPropertyChanged(Observable sender, int propertyId) {
+                    //When the info is downloaded load the thumbnail
                     loadThumbnail(comic.getThumbnail(), itemBinding.image);
                 }
             });
@@ -88,7 +95,6 @@ public class DetailsFragment extends Fragment {
             binding.toInflateComics.addView(itemBinding.getRoot());
         }
     }
-
     private void loadEvents(List<MarvelModel.Event> eventItems) {
         final LayoutInflater inflater = LayoutInflater.from(binding.toInflateEvents.getContext());
         for (int i = 0; i < DETAILS_COUNT && i < eventItems.size(); i++) {
@@ -103,6 +109,7 @@ public class DetailsFragment extends Fragment {
             event.loaded.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
                 @Override
                 public void onPropertyChanged(Observable sender, int propertyId) {
+                    //When the info is downloaded load the thumbnail
                     loadThumbnail(event.getThumbnail(), itemBinding.image);
                 }
             });
@@ -110,7 +117,6 @@ public class DetailsFragment extends Fragment {
             binding.toInflateEvents.addView(itemBinding.getRoot());
         }
     }
-
     private void loadStories(List<MarvelModel.Story> storyItems) {
         final LayoutInflater inflater = LayoutInflater.from(binding.toInflateStories.getContext());
         for (int i = 0; i < DETAILS_COUNT && i < storyItems.size(); i++) {
@@ -125,6 +131,7 @@ public class DetailsFragment extends Fragment {
             story.loaded.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
                 @Override
                 public void onPropertyChanged(Observable sender, int propertyId) {
+                    //When the info is downloaded load the thumbnail
                     loadThumbnail(story.getThumbnail(), itemBinding.image);
                 }
             });
@@ -132,7 +139,6 @@ public class DetailsFragment extends Fragment {
             binding.toInflateStories.addView(itemBinding.getRoot());
         }
     }
-
     private void loadSeries(List<MarvelModel.SeriesItem> seriesItems) {
         final LayoutInflater inflater = LayoutInflater.from(binding.toInflateSeries.getContext());
         for (int i = 0; i < DETAILS_COUNT && i < seriesItems.size(); i++) {
@@ -147,6 +153,7 @@ public class DetailsFragment extends Fragment {
             series.loaded.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
                 @Override
                 public void onPropertyChanged(Observable sender, int propertyId) {
+                    //When the info is downloaded load the thumbnail
                     loadThumbnail(series.getThumbnail(), itemBinding.image);
                 }
             });

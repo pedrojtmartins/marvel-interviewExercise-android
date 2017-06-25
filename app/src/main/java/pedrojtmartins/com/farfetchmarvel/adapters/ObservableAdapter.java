@@ -15,24 +15,28 @@ import static pedrojtmartins.com.farfetchmarvel.settings.Settings.PAGINATION_ITE
 
 abstract class ObservableAdapter<T> extends RecyclerView.Adapter<ObservableAdapter.ViewHolder> {
 
-    private ObservableInt currPage; // Page displaying
-    private final ObservableArrayList<T> items;
+    private final ObservableInt currPage; // Current page displaying
+    private final ObservableArrayList<T> items; // Items list
 
     ObservableAdapter(ObservableArrayList<T> items, ObservableInt currPage) {
         this.items = items;
-
         this.currPage = currPage;
+
+        // Register property changed listener
         this.currPage.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
             @Override
             public void onPropertyChanged(Observable sender, int propertyId) {
+                //Just warn the adapter it needs to update
                 notifyDataSetChanged();
-
             }
         });
     }
 
     @Override
     public int getItemCount() {
+        // Due to pagination there is a need for extra processing.
+        // Max number of items per page will be 'PAGINATION_ITEMS_COUNT'
+        // It needs to check if it has that amount of items for the 'currPage'
         if (items == null || currPage.get() < 0)
             return 0;
 
@@ -49,6 +53,10 @@ abstract class ObservableAdapter<T> extends RecyclerView.Adapter<ObservableAdapt
     }
 
     T getItem(int pos) {
+        // Due to pagination there is a need for extra processing.
+        // It will find the correct position having
+        // 'PAGINATION_ITEMS_COUNT' and 'currPage' in consideration.
+
         if (items == null || currPage.get() < 0)
             return null;
 

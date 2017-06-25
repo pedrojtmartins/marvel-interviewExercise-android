@@ -25,9 +25,13 @@ public class MarvelAPI {
     private static final String baseUrl = "http://gateway.marvel.com/";
 
     private static IMarvelAPI api;
+
     private MarvelAPI() {
     }
 
+    /**
+     * @return instance of the api
+     */
     public static IMarvelAPI getInstance() {
         if (api == null) {
             api = initApi();
@@ -48,6 +52,8 @@ public class MarvelAPI {
                 String toHash = timestamp + apiPrivateKey + apiPublicKey;
                 String hash = md5(toHash);
 
+                // All requests must have specific query
+                // for authorization purposes
                 HttpUrl url = originalHttpUrl.newBuilder()
                         .addQueryParameter("ts", timestamp)
                         .addQueryParameter("apikey", apiPublicKey)
@@ -69,6 +75,7 @@ public class MarvelAPI {
     }
 
     private static String md5(String in) {
+        // Required to authorize all marvel api requests
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("MD5");
@@ -77,9 +84,9 @@ public class MarvelAPI {
             byte[] a = digest.digest();
             int len = a.length;
             StringBuilder sb = new StringBuilder(len << 1);
-            for (int i = 0; i < len; i++) {
-                sb.append(Character.forDigit((a[i] & 0xf0) >> 4, 16));
-                sb.append(Character.forDigit(a[i] & 0x0f, 16));
+            for (byte anA : a) {
+                sb.append(Character.forDigit((anA & 0xf0) >> 4, 16));
+                sb.append(Character.forDigit(anA & 0x0f, 16));
             }
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {

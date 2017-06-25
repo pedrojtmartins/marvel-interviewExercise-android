@@ -7,4 +7,6 @@
     <string name="stories">Stories</string>
     <string name="series">Series</string>
     <string name="pageStringSeperator">/</string>
+    <string name="apiError">Try again later</string>
+    <string name="imgDescription">Image</string>
 </resources>

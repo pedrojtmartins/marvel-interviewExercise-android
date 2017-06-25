@@ -21,64 +21,36 @@
             android:orientation="vertical">
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:gravity="center_horizontal"
-                android:text="@string/comics"
-                android:textSize="16sp"
-                android:textStyle="bold"/>
+                style="@style/DetailSectionTitle"
+                android:text="@string/comics"/>
 
             <LinearLayout
                 android:id="@+id/toInflateComics"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"/>
+                style="@style/DetailSectionBody"/>
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:gravity="center_horizontal"
-                android:text="@string/events"
-                android:textSize="16sp"
-                android:textStyle="bold"/>
+                style="@style/DetailSectionTitle"
+                android:text="@string/events"/>
 
             <LinearLayout
                 android:id="@+id/toInflateEvents"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"/>
+                style="@style/DetailSectionBody"/>
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:gravity="center_horizontal"
-                android:text="@string/stories"
-                android:textSize="16sp"
-                android:textStyle="bold"/>
+                style="@style/DetailSectionTitle"
+                android:text="@string/stories"/>
 
             <LinearLayout
                 android:id="@+id/toInflateStories"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"/>
+                style="@style/DetailSectionBody"/>
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:gravity="center_horizontal"
-                android:text="@string/series"
-                android:textSize="16sp"
-                android:textStyle="bold"/>
+                style="@style/DetailSectionTitle"
+                android:text="@string/series"/>
 
             <LinearLayout
                 android:id="@+id/toInflateSeries"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"/>
+                style="@style/DetailSectionBody"/>
 
         </LinearLayout>
     </ScrollView>

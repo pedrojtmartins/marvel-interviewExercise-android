@@ -2,6 +2,7 @@ package pedrojtmartins.com.farfetchmarvel.viewmodels;
 
 import android.databinding.ObservableArrayList;
 import android.databinding.ObservableBoolean;
+import android.databinding.ObservableInt;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
@@ -26,27 +27,36 @@ import static pedrojtmartins.com.farfetchmarvel.settings.Settings.PAGINATION_ITE
 
 public class MainViewModel {
 
+    //region Variables
+    // Keeps track of the app state.
     public MainStatus mainStatus;
 
-    // Main variable that holds the characters that are ready to be displayed.
+    // Holds the characters that are ready to be displayed.
     private ObservableArrayList<MarvelModel.Character> characters;
 
-    // This temp variable will be used when a search is done.
-    // The cached characters will be "moved" to this variable
-    // while the "characters" variable is used to present the filtered characters.
-    // This makes the maintenance easier since only one observable is used.
-    private ObservableArrayList<MarvelModel.Character> tempCharacters;
+    // Holds the filtered characters searched by name that are ready to be displayed.
+    private ObservableArrayList<MarvelModel.Character> filteredCharacters;
+
+    // Last filter used
     private String filter;
 
+    // Selected character that will download extra info
     private MarvelModel.Character selectedCharacter;
 
+    // Shared Preferences manager that will handle favourites
     private SharedPreferencesManager spManager;
 
+    // To warn the UI when an api call fails
+    public ObservableInt apiCallResult;
+    //endregion
+
+    //region Initialization
     public MainViewModel(SharedPreferencesManager spManager) {
         this.spManager = spManager;
 
         characters = new ObservableArrayList<>();
-        tempCharacters = new ObservableArrayList<>();
+        filteredCharacters = new ObservableArrayList<>();
+        apiCallResult = new ObservableInt(0);
 
         mainStatus = new MainStatus();
     }
@@ -58,10 +68,15 @@ public class MainViewModel {
         if (characters.isEmpty()) {
             // Only needs to download first characters
             // if they are not already cached
-            downloadCharacters();
+            loadCharacters();
         }
     }
+    //endregion
 
+    //region Data pagination
+    /**
+     * Updates to the previous page if possible
+     */
     public void previousPage() {
         if (mainStatus.getCurrPage() <= 0)
             return;
@@ -69,20 +84,55 @@ public class MainViewModel {
         mainStatus.setCurrPage(mainStatus.getCurrPage() - 1);
     }
 
+    /**
+     * Updates to the next page if possible.
+     * Characters will be downloaded if not cached yet
+     */
     public void nextPage() {
         int currTargetPage = mainStatus.getCurrPage() + 1;
+        if (currTargetPage >= mainStatus.getAvailablePagesInt()) {
+            //No more pages available. Do nothing
+            return;
+        }
+
         int firstTargetIndex = currTargetPage * Settings.PAGINATION_ITEMS_COUNT;
 
+        if (mainStatus.currentList == MainStatus.NORMAL_LIST)
+            nextNormalPage(firstTargetIndex);
+        else
+            nextFilteredPage(firstTargetIndex);
+    }
+
+    private void nextNormalPage(int firstTargetIndex) {
         if (characters.size() > firstTargetIndex) {
             // We already have the characters cached. Just update the current page
             mainStatus.setCurrPage(mainStatus.getCurrPage() + 1);
         } else {
             // The target characters are not cached. Download them.
-            downloadCharacters();
+            loadCharacters();
+        }
+
+    }
+    private void nextFilteredPage(int firstTargetIndex) {
+        if (filteredCharacters.size() > firstTargetIndex) {
+            // We already have the characters cached. Just update the current page
+            mainStatus.setCurrPage(mainStatus.getCurrPage() + 1);
+        } else {
+            // The target characters are not cached. Download them.
+            loadFilteredCharacters(filter);
         }
     }
+    // endregion
 
-    private void downloadCharacters() {
+    //region Main lists handling
+    /**
+     * @return list of characters
+     */
+    public ObservableArrayList<MarvelModel.Character> getCharacters() {
+        return mainStatus.currentList == MainStatus.NORMAL_LIST ? characters : filteredCharacters;
+    }
+
+    private void loadCharacters() {
         mainStatus.setLoadingCharacters(true);
         MarvelAPI.getInstance().getCharacters(PAGINATION_ITEMS_COUNT, characters.size()).enqueue(new Callback<MarvelModel>() {
             @Override
@@ -98,24 +148,69 @@ public class MainViewModel {
 
                         ArrayList<MarvelModel.Character> updatedCharacters = findFavourites(apiResponse.data.characters);
                         characters.addAll(updatedCharacters);
-
                         mainStatus.setCurrPage(mainStatus.getCurrPage() + 1);
                     }
                 } else {
-                    // TODO: 20/06/2017 display error msg
+                    apiCallResult.set(-1);
                 }
             }
             @Override
-            public void onFailure(Call<MarvelModel> call, Throwable t) {
+            public void onFailure(@NonNull Call<MarvelModel> call, @NonNull Throwable t) {
                 mainStatus.setLoadingCharacters(false);
-                // TODO: 20/06/2017 display error msg
+                apiCallResult.set(-1);
             }
         });
     }
-    public ObservableArrayList<MarvelModel.Character> getCharacters() {
-        return characters;
-    }
 
+    /**
+     * Download (more) characters whose names start with 'query'.
+     *
+     * @param query Name filter
+     */
+    public void loadFilteredCharacters(String query) {
+        if (query == null || query.isEmpty() || !query.equals(filter)) {
+            // The filter is empty or was dismissed OR
+            // this is a new search and we need to reset the state
+            filteredCharacters.clear();
+            mainStatus.resetFilterStatus();
+
+            if (query == null || query.isEmpty())
+                return;
+        }
+
+        mainStatus.currentList = MainStatus.FILTERED_LIST;
+        mainStatus.setLoadingCharacters(true);
+        filter = query;
+
+        MarvelAPI.getInstance().getCharactersByName(filter, PAGINATION_ITEMS_COUNT, filteredCharacters.size()).enqueue(new Callback<MarvelModel>() {
+            @Override
+            public void onResponse(@NonNull Call<MarvelModel> call, @NonNull Response<MarvelModel> response) {
+                mainStatus.setLoadingCharacters(false);
+                if (response.isSuccessful()) {
+                    MarvelModel apiResponse = response.body();
+                    if (apiResponse != null && apiResponse.data != null && apiResponse.data.characters != null) {
+                        if (filteredCharacters.size() == 0) {
+                            // If this is the first call, find out how many pages there are.
+                            mainStatus.setAvailablePages((int) Math.ceil((double) apiResponse.data.total / Settings.PAGINATION_ITEMS_COUNT));
+                        }
+
+                        filteredCharacters.addAll(findFavourites(apiResponse.data.characters));
+                        mainStatus.setCurrPage(mainStatus.getCurrPage() + 1);
+                    }
+                } else {
+                    apiCallResult.set(-1);
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<MarvelModel> call, @NonNull Throwable t) {
+                mainStatus.setLoadingCharacters(false);
+                apiCallResult.set(-1);
+            }
+        });
+    }
+    //endregion
+
+    //region Favourites helper
     private ArrayList<MarvelModel.Character> findFavourites(ArrayList<MarvelModel.Character> characters) {
         ArrayList<Long> favourites = spManager.getFavourites();
 
@@ -125,65 +220,40 @@ public class MainViewModel {
 
         return characters;
     }
+    //endregion
 
-    public void loadMoreCharacters() {
-        if (tempCharacters.isEmpty())
-            downloadCharacters();
-        else
-            loadFilteredCharacters(filter);
-
-        // TODO: 22/06/2017 don't like this
-    }
-
-    public void loadFilteredCharacters(String query) {
-        if (query == null || query.isEmpty()) {
-            // The filter is empty or was dismissed.
-            // Recover all the cached characters
-            characters.clear();
-            characters.addAll(tempCharacters);
-            tempCharacters.clear();
-            return;
-        }
-
-        filter = query;
-
-        int offset = tempCharacters.isEmpty() ? 0 : characters.size();
-        MarvelAPI.getInstance().getCharactersByName(filter, PAGINATION_ITEMS_COUNT, offset).enqueue(new Callback<MarvelModel>() {
-            @Override
-            public void onResponse(@NonNull Call<MarvelModel> call, @NonNull Response<MarvelModel> response) {
-                if (response.isSuccessful()) {
-                    MarvelModel apiResponse = response.body();
-                    if (apiResponse != null && apiResponse.data != null && apiResponse.data.characters != null) {
-                        if (tempCharacters.isEmpty()) {
-                            tempCharacters.addAll(characters);
-                            characters.clear();
-                        }
-
-                        characters.addAll(apiResponse.data.characters);
-                    }
-                } else {
-                    // TODO: 20/06/2017 display error msg
-                }
-            }
-            @Override
-            public void onFailure(Call<MarvelModel> call, Throwable t) {
-                // TODO: 20/06/2017 display error msg
-            }
-        });
-    }
-
+    //region Item selection
+    /**
+     * @return Last selected character
+     */
     public MarvelModel.Character getSelectedCharacter() {
         return selectedCharacter;
     }
 
+    /**
+     * @param character Item that was pressed
+     */
     public void onCharacterSelected(MarvelModel.Character character) {
         selectedCharacter = character;
     }
+
+
+    /**
+     * @param character Item that was long pressed
+     */
     public void onCharacterLongPressed(MarvelModel.Character character) {
         spManager.addFavourites(character.id);
         character.setFavourite(!character.isFavourite);
     }
+    //endregion
 
+    //region Details
+    /**
+     * Will start the download of required information.
+     * Data binding should be used for updates when ready.
+     *
+     * @param character Item that is selected
+     */
     public void getDetails(final MarvelModel.Character character) {
         if (character == null || character.comics == null || character.comics.comicItems == null)
             return;
@@ -216,17 +286,16 @@ public class MainViewModel {
                             comic.setLoaded(true);
                         }
                     } else {
-                        // TODO: 20/06/2017 display error msg
+                        apiCallResult.set(-1);
                     }
                 }
                 @Override
-                public void onFailure(Call<MarvelDetails> call, Throwable t) {
-                    // TODO: 20/06/2017 display error msg
+                public void onFailure(@NonNull Call<MarvelDetails> call, @NonNull Throwable t) {
+                    apiCallResult.set(-1);
                 }
             });
         }
     }
-
     private void downloadEventDetails(MarvelModel.Character character) {
         for (int i = 0; i < DETAILS_COUNT && i < character.events.eventItems.size(); i++) {
             final MarvelModel.Event event = character.events.eventItems.get(i);
@@ -249,17 +318,16 @@ public class MainViewModel {
                             event.setLoaded(true);
                         }
                     } else {
-                        // TODO: 20/06/2017 display error msg
+                        apiCallResult.set(-1);
                     }
                 }
                 @Override
-                public void onFailure(Call<MarvelDetails> call, Throwable t) {
-                    // TODO: 20/06/2017 display error msg
+                public void onFailure(@NonNull Call<MarvelDetails> call, @NonNull Throwable t) {
+                    apiCallResult.set(-1);
                 }
             });
         }
     }
-
     private void downloadStoryDetails(MarvelModel.Character character) {
         for (int i = 0; i < DETAILS_COUNT && i < character.stories.storyItems.size(); i++) {
             final MarvelModel.Story story = character.stories.storyItems.get(i);
@@ -282,17 +350,16 @@ public class MainViewModel {
                             story.setLoaded(true);
                         }
                     } else {
-                        // TODO: 20/06/2017 display error msg
+                        apiCallResult.set(-1);
                     }
                 }
                 @Override
-                public void onFailure(Call<MarvelDetails> call, Throwable t) {
-                    // TODO: 20/06/2017 display error msg
+                public void onFailure(@NonNull Call<MarvelDetails> call, @NonNull Throwable t) {
+                    apiCallResult.set(-1);
                 }
             });
         }
     }
-
     private void downloadSeriesDetails(MarvelModel.Character character) {
         for (int i = 0; i < DETAILS_COUNT && i < character.series.seriesItems.size(); i++) {
             final MarvelModel.SeriesItem series = character.series.seriesItems.get(i);
@@ -315,16 +382,15 @@ public class MainViewModel {
                             series.setLoaded(true);
                         }
                     } else {
-                        // TODO: 20/06/2017 display error msg
+                        apiCallResult.set(-1);
                     }
                 }
                 @Override
-                public void onFailure(Call<MarvelDetails> call, Throwable t) {
-                    // TODO: 20/06/2017 display error msg
+                public void onFailure(@NonNull Call<MarvelDetails> call, @NonNull Throwable t) {
+                    apiCallResult.set(-1);
                 }
             });
         }
     }
-
-
+    //endregion
 }

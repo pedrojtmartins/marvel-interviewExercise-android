@@ -26,9 +26,6 @@ import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
 
 public class ListFragment extends Fragment implements IItemInteraction<MarvelModel.Character> {
 
-    public static final int MAIN_LIST = 0;
-    public static final int FILTERED_LIST = 1;
-
     private FragmentListBinding binding;
     private IListCallback callback;
 
@@ -37,6 +34,7 @@ public class ListFragment extends Fragment implements IItemInteraction<MarvelMod
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_list, container, false);
 
+        // Set interaction listeners
         binding.nextPage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,12 +58,14 @@ public class ListFragment extends Fragment implements IItemInteraction<MarvelMod
         MainStatus status = callback.getMainListBindable();
         binding.setData(status);
 
+        MainListAdapter adapter = new MainListAdapter(callback.getItems(), this, status.getCurrPageObservable());
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        binding.recyclerView.setAdapter(new MainListAdapter(callback.getItems(), this, status.getCurrPageObservable()));
+        binding.recyclerView.setAdapter(adapter);
 
         status.getCurrPageObservable().addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
             @Override
             public void onPropertyChanged(Observable sender, int propertyId) {
+                // When the pagination system updates scroll to the top.
                 binding.recyclerView.scrollToPosition(0);
             }
         });

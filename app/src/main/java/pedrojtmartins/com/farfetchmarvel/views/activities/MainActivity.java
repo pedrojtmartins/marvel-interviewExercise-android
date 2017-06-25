@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
+import android.databinding.Observable;
 import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.view.Menu;
@@ -28,10 +29,8 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
 
     private ActivityMainBinding binding;
     private MainViewModel viewModel;
-
-    private Fragment listFragment;
     private Fragment filteredFragment;
-    private Fragment detailsFragment;
+    private String lastFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +42,11 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
         viewModel = new MainViewModel(spManager);
         viewModel.initialize();
 
+        registerObservables();
+
         initializeListFragment();
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -57,9 +59,9 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                viewModel.loadFilteredCharacters(null); // Clear the filter
-//                onBackPressed(); // The main list is on the stack. Just move back.
+                viewModel.loadFilteredCharacters(null); // Clears the filter
                 filteredFragment = null;
+                getFragmentManager().popBackStack();
                 return false;
             }
         });
@@ -75,15 +77,39 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
     private void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String filter = intent.getStringExtra(SearchManager.QUERY);
+
+            //Emulator bug? The same intent is being called multiple times
+            if (filter == null || filter.equals(lastFilter))
+                return;
+
+            lastFilter = filter;
             viewModel.loadFilteredCharacters(filter);
+
+            if (filteredFragment == null) {
+                // If this is the first search instantiate a new list fragment
+                filteredFragment = new ListFragment();
+                getFragmentManager().beginTransaction()
+                        .addToBackStack(null)
+                        .replace(R.id.fragment_container, filteredFragment)
+                        .commit();
+            }
         }
     }
 
     private void initializeListFragment() {
-        listFragment = new ListFragment();
+        Fragment listFragment = new ListFragment();
         getFragmentManager().beginTransaction()
                 .add(R.id.fragment_container, listFragment)
                 .commit();
+    }
+
+    private void registerObservables() {
+        viewModel.apiCallResult.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
+            @Override
+            public void onPropertyChanged(Observable sender, int propertyId) {
+//                Snackbar.make(binding.fragmentContainer, R.string.apiError, Snackbar.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override
@@ -91,17 +117,18 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
         return viewModel.getCharacters();
     }
 
-    public void loadMoreCharacters() {
-        viewModel.loadMoreCharacters();
-    }
-
     @Override
     public void onItemClick(MarvelModel.Character character) {
         viewModel.onCharacterSelected(character);
-        detailsFragment = new DetailsFragment();
+
+        Fragment detailsFragment = new DetailsFragment();
         getFragmentManager().beginTransaction()
                 .addToBackStack(null)
-                .setCustomAnimations(R.animator.in_from_right, R.animator.out_to_left)
+                .setCustomAnimations(
+                        R.animator.fade_in,
+                        R.animator.fade_out,
+                        R.animator.fade_in,
+                        R.animator.fade_out)
                 .replace(R.id.fragment_container, detailsFragment)
                 .commit();
     }
@@ -109,11 +136,11 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
     public void onItemLongClick(MarvelModel.Character character) {
         viewModel.onCharacterLongPressed(character);
     }
+
     @Override
     public MainStatus getMainListBindable() {
         return viewModel.mainStatus;
     }
-
     @Override
     public void previousPage() {
         viewModel.previousPage();
@@ -122,8 +149,6 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
     public void nextPage() {
         viewModel.nextPage();
     }
-
-
     @Override
     public MarvelModel.Character getSelectedCharacter() {
         return viewModel.getSelectedCharacter();

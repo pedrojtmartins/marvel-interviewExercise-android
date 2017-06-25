@@ -40,6 +40,7 @@ public class MainListAdapter extends ObservableAdapter<MarvelModel.Character> {
         CharacterItemBinding binding = (CharacterItemBinding) holder.binding;
         binding.setModel(currCharacter);
 
+        // Add interaction listeners
         binding.getRoot().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

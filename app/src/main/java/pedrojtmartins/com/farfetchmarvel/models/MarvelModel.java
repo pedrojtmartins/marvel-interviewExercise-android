@@ -17,56 +17,57 @@ import pedrojtmartins.com.farfetchmarvel.BR;
  */
 
 public class MarvelModel {
+    // All unused variables are commented for improved serialization performance
 
-    @SerializedName("code")
-    public Integer code;
-
-    @SerializedName("status")
-    public String status;
-
-    @SerializedName("copyright")
-    public String copyright;
-
-    @SerializedName("attributionText")
-    public String attributionText;
-
-    @SerializedName("attributionHTML")
-    public String attributionHTML;
-
-    @SerializedName("etag")
-    public String etag;
+//    @SerializedName("code")
+//    public Integer code;
+//
+//    @SerializedName("status")
+//    public String status;
+//
+//    @SerializedName("copyright")
+//    public String copyright;
+//
+//    @SerializedName("attributionText")
+//    public String attributionText;
+//
+//    @SerializedName("attributionHTML")
+//    public String attributionHTML;
+//
+//    @SerializedName("etag")
+//    public String etag;
 
     @SerializedName("data")
     public Data data;
 
     public class Comics {
-        @SerializedName("available")
-        public Integer available;
-
-        @SerializedName("collectionURI")
-        public String collectionURI;
+//        @SerializedName("available")
+//        public Integer available;
+//
+//        @SerializedName("collectionURI")
+//        public String collectionURI;
 
         @SerializedName("items")
         public List<Comic> comicItems;
 
-        @SerializedName("returned")
-        public Integer returned;
+//        @SerializedName("returned")
+//        public Integer returned;
     }
 
 
     public class Data {
 
-        @SerializedName("offset")
-        public Integer offset;
-
-        @SerializedName("limit")
-        public Integer limit;
+//        @SerializedName("offset")
+//        public Integer offset;
+//
+//        @SerializedName("limit")
+//        public Integer limit;
 
         @SerializedName("total")
         public Integer total;
 
-        @SerializedName("count")
-        public Integer count;
+//        @SerializedName("count")
+//        public Integer count;
 
         @SerializedName("results")
         public ArrayList<Character> characters = null;
@@ -75,17 +76,17 @@ public class MarvelModel {
 
     public class Events {
 
-        @SerializedName("available")
-        public Integer available;
-
-        @SerializedName("collectionURI")
-        public String collectionURI;
+//        @SerializedName("available")
+//        public Integer available;
+//
+//        @SerializedName("collectionURI")
+//        public String collectionURI;
 
         @SerializedName("items")
         public List<Event> eventItems = null;
 
-        @SerializedName("returned")
-        public Integer returned;
+//        @SerializedName("returned")
+//        public Integer returned;
 
     }
 
@@ -257,6 +258,7 @@ public class MarvelModel {
             return loaded.get();
 
         }
+
         public void setLoaded(boolean loaded) {
             if (this.loaded == null)
                 this.loaded = new ObservableBoolean(loaded);
@@ -274,9 +276,7 @@ public class MarvelModel {
         public void setThumbnail(String path, String extension) {
             thumbnail = path + "." + extension;
         }
-
     }
-
 
     public class Character extends BaseObservable {
         @SerializedName("id")
@@ -290,14 +290,14 @@ public class MarvelModel {
         @Bindable
         public String description;
 
-        @SerializedName("modified")
-        public String modified;
+//        @SerializedName("modified")
+//        public String modified;
 
         @SerializedName("thumbnail")
         public Thumbnail thumbnail;
 
-        @SerializedName("resourceURI")
-        public String resourceURI;
+//        @SerializedName("resourceURI")
+//        public String resourceURI;
 
         @SerializedName("comics")
         public Comics comics;
@@ -311,9 +311,10 @@ public class MarvelModel {
         @SerializedName("events")
         public Events events;
 
-        @SerializedName("urls")
-        public List<Url> urls = null;
+//        @SerializedName("urls")
+//        public List<Url> urls = null;
 
+        // Will be responsible for activating the Favourite UI
         @Bindable
         public boolean isFavourite;
         public void setFavourite(boolean favourite) {
@@ -322,39 +323,34 @@ public class MarvelModel {
         }
     }
 
-
     public class Series {
 
-        @SerializedName("available")
-        public Integer available;
-
-        @SerializedName("collectionURI")
-        public String collectionURI;
+//        @SerializedName("available")
+//        public Integer available;
+//
+//        @SerializedName("collectionURI")
+//        public String collectionURI;
 
         @SerializedName("items")
         public List<SeriesItem> seriesItems;
 
-        @SerializedName("returned")
-        public Integer returned;
+//        @SerializedName("returned")
+//        public Integer returned;
     }
 
-
     public class Stories {
-
-        @SerializedName("available")
-        public Integer available;
-
-        @SerializedName("collectionURI")
-        public String collectionURI;
+//        @SerializedName("available")
+//        public Integer available;
+//
+//        @SerializedName("collectionURI")
+//        public String collectionURI;
 
         @SerializedName("items")
         public List<Story> storyItems;
 
-        @SerializedName("returned")
-        public Integer returned;
-
+//        @SerializedName("returned")
+//        public Integer returned;
     }
-
 
     public class Thumbnail {
         @SerializedName("path")
@@ -364,13 +360,11 @@ public class MarvelModel {
         public String extension;
     }
 
-
-    public class Url {
-        @SerializedName("type")
-        public String type;
-
-        @SerializedName("url")
-        public String url;
-    }
-
+//    public class Url {
+//        @SerializedName("type")
+//        public String type;
+//
+//        @SerializedName("url")
+//        public String url;
+//    }
 }

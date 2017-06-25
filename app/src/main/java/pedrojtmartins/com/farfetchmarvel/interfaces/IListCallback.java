@@ -1,7 +1,6 @@
 package pedrojtmartins.com.farfetchmarvel.interfaces;
 
 import android.databinding.ObservableArrayList;
-import android.databinding.ObservableInt;
 
 import pedrojtmartins.com.farfetchmarvel.models.MainStatus;
 import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
@@ -13,12 +12,10 @@ import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
 
 public interface IListCallback{
     ObservableArrayList<MarvelModel.Character> getItems();
+    MainStatus getMainListBindable();
 
-    void loadMoreCharacters();
     void onItemClick(MarvelModel.Character item);
     void onItemLongClick(MarvelModel.Character item);
-
-    MainStatus getMainListBindable();
 
     void previousPage();
     void nextPage();
