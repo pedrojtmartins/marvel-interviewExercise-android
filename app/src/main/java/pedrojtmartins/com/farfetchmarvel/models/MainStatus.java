@@ -48,7 +48,25 @@ public class MainStatus extends BaseObservable {
         notifyPropertyChanged(BR.currPageString);
     }
 
+    private ObservableInt currFilteredPage;
+    public ObservableInt getCurrFilteredPageObservable() {
+        return currFilteredPage;
+    }
+    public int getCurrFilteredPage() {
+        return currFilteredPage.get();
+    }
+    @Bindable
+    public String getCurrFilteredPageString() {
+        return String.valueOf(currFilteredPage.get() + 1);
+    }
+    public void setCurrFilteredPage(int currPage) {
+        this.currFilteredPage.set(currPage);
+        notifyPropertyChanged(BR.currFilteredPageString);
+    }
+
+
     public MainStatus() {
         currPage = new ObservableInt(-1);
+        currFilteredPage = new ObservableInt(-1);
     }
 }

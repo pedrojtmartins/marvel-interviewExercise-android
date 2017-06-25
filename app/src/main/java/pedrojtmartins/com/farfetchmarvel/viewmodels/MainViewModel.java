@@ -4,11 +4,14 @@ import android.databinding.ObservableArrayList;
 import android.databinding.ObservableBoolean;
 import android.support.annotation.NonNull;
 
+import java.util.ArrayList;
+
 import pedrojtmartins.com.farfetchmarvel.api.MarvelAPI;
 import pedrojtmartins.com.farfetchmarvel.models.MainStatus;
 import pedrojtmartins.com.farfetchmarvel.models.MarvelDetails;
 import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
 import pedrojtmartins.com.farfetchmarvel.settings.Settings;
+import pedrojtmartins.com.farfetchmarvel.sharedPreferences.SharedPreferencesManager;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -37,15 +40,13 @@ public class MainViewModel {
 
     private MarvelModel.Character selectedCharacter;
 
-    // selectedCharacterDetails will be used to control the loading animations
-    private ObservableArrayList<Integer> selectedCharacterDetails;
+    private SharedPreferencesManager spManager;
 
+    public MainViewModel(SharedPreferencesManager spManager) {
+        this.spManager = spManager;
 
-    public MainViewModel() {
         characters = new ObservableArrayList<>();
         tempCharacters = new ObservableArrayList<>();
-
-        selectedCharacterDetails = new ObservableArrayList<>();
 
         mainStatus = new MainStatus();
     }
@@ -95,9 +96,10 @@ public class MainViewModel {
                             mainStatus.setAvailablePages((int) Math.ceil((double) apiResponse.data.total / Settings.PAGINATION_ITEMS_COUNT));
                         }
 
-                        characters.addAll(apiResponse.data.characters);
+                        ArrayList<MarvelModel.Character> updatedCharacters = findFavourites(apiResponse.data.characters);
+                        characters.addAll(updatedCharacters);
+
                         mainStatus.setCurrPage(mainStatus.getCurrPage() + 1);
-                        return;
                     }
                 } else {
                     // TODO: 20/06/2017 display error msg
@@ -111,6 +113,16 @@ public class MainViewModel {
         });
     }
     public ObservableArrayList<MarvelModel.Character> getCharacters() {
+        return characters;
+    }
+
+    private ArrayList<MarvelModel.Character> findFavourites(ArrayList<MarvelModel.Character> characters) {
+        ArrayList<Long> favourites = spManager.getFavourites();
+
+        for (MarvelModel.Character character : characters) {
+            character.setFavourite(favourites.contains(character.id));
+        }
+
         return characters;
     }
 
@@ -167,19 +179,19 @@ public class MainViewModel {
     public void onCharacterSelected(MarvelModel.Character character) {
         selectedCharacter = character;
     }
+    public void onCharacterLongPressed(MarvelModel.Character character) {
+        spManager.addFavourites(character.id);
+        character.setFavourite(!character.isFavourite);
+    }
 
-    public ObservableArrayList<Integer> getDetails(final MarvelModel.Character character) {
-        selectedCharacterDetails.clear();
-
+    public void getDetails(final MarvelModel.Character character) {
         if (character == null || character.comics == null || character.comics.comicItems == null)
-            return null;
+            return;
 
         downloadComicDetails(character);
         downloadEventDetails(character);
         downloadStoryDetails(character);
         downloadSeriesDetails(character);
-
-        return selectedCharacterDetails;
     }
 
     private void downloadComicDetails(MarvelModel.Character character) {

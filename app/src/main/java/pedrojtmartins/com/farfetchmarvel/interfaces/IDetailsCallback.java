@@ -1,7 +1,5 @@
 package pedrojtmartins.com.farfetchmarvel.interfaces;
 
-import android.databinding.ObservableArrayList;
-
 import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
 
 /**
@@ -11,5 +9,5 @@ import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
 
 public interface IDetailsCallback {
     MarvelModel.Character getSelectedCharacter();
-    ObservableArrayList<Integer> getDetails(MarvelModel.Character character);
+    void getDetails(MarvelModel.Character character);
 }

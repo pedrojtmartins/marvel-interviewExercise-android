@@ -13,8 +13,10 @@ import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
 
 public interface IListCallback{
     ObservableArrayList<MarvelModel.Character> getItems();
+
     void loadMoreCharacters();
     void onItemClick(MarvelModel.Character item);
+    void onItemLongClick(MarvelModel.Character item);
 
     MainStatus getMainListBindable();
 

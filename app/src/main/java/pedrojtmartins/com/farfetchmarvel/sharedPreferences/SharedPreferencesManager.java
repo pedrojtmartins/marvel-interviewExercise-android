@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class SharedPreferencesManager {
     private SharedPreferences sharedPreferences;
 
-    private final String SHARED_PREFS = "sharedPrefs";
+    public static final String SHARED_PREFS = "sharedPrefs";
     private final String FAVOURITES = "favourites";
 
     public SharedPreferencesManager(SharedPreferences sharedPreferences) {
@@ -40,19 +40,29 @@ public class SharedPreferencesManager {
         return favourites;
     }
 
-    public void addFavourites(ArrayList<Long> favourites) {
+    public ArrayList<Long> addFavourites(Long favourites) {
+        ArrayList<Long> list = getFavourites();
+        if (list == null)
+            list = new ArrayList<>();
+
+        if (list.contains(favourites)) {
+            list.remove(favourites);
+        } else {
+            list.add(favourites);
+        }
 
         String serialized = "";
-        for (Long fav : favourites) {
+        for (Long fav : list) {
             if (!serialized.isEmpty())
                 serialized += ";";
 
             serialized += fav;
         }
 
-//        SharedPreferences sp = mContext.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(FAVOURITES, serialized);
         editor.apply();
+
+        return getFavourites();
     }
 }

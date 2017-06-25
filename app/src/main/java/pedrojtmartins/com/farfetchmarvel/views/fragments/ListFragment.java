@@ -26,6 +26,9 @@ import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
 
 public class ListFragment extends Fragment implements IItemInteraction<MarvelModel.Character> {
 
+    public static final int MAIN_LIST = 0;
+    public static final int FILTERED_LIST = 1;
+
     private FragmentListBinding binding;
     private IListCallback callback;
 
@@ -81,5 +84,9 @@ public class ListFragment extends Fragment implements IItemInteraction<MarvelMod
     @Override
     public void onItemClick(MarvelModel.Character item) {
         callback.onItemClick(item);
+    }
+    @Override
+    public void onItemLongClick(MarvelModel.Character item) {
+        callback.onItemLongClick(item);
     }
 }

@@ -6,6 +6,7 @@ import android.databinding.ObservableBoolean;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import pedrojtmartins.com.farfetchmarvel.BR;
@@ -68,7 +69,7 @@ public class MarvelModel {
         public Integer count;
 
         @SerializedName("results")
-        public List<Character> characters = null;
+        public ArrayList<Character> characters = null;
     }
 
 
@@ -135,7 +136,7 @@ public class MarvelModel {
     }
 
 
-    public class SeriesItem extends BaseObservable{
+    public class SeriesItem extends BaseObservable {
         @SerializedName("resourceURI")
         public String resourceURI;
 
@@ -181,7 +182,7 @@ public class MarvelModel {
     }
 
 
-    public class Story extends BaseObservable{
+    public class Story extends BaseObservable {
         @SerializedName("resourceURI")
         public String resourceURI;
 
@@ -230,7 +231,7 @@ public class MarvelModel {
     }
 
 
-    public class Event extends BaseObservable{
+    public class Event extends BaseObservable {
         @SerializedName("resourceURI")
         public String resourceURI;
 
@@ -279,7 +280,7 @@ public class MarvelModel {
 
     public class Character extends BaseObservable {
         @SerializedName("id")
-        public Integer id;
+        public Long id;
 
         @SerializedName("name")
         @Bindable
@@ -312,6 +313,13 @@ public class MarvelModel {
 
         @SerializedName("urls")
         public List<Url> urls = null;
+
+        @Bindable
+        public boolean isFavourite;
+        public void setFavourite(boolean favourite) {
+            isFavourite = favourite;
+            notifyPropertyChanged(BR.isFavourite);
+        }
     }
 
 

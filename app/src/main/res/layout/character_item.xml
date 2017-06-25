@@ -13,6 +13,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@{model.isFavourite ? @color/favourite : @color/transparent}"
         android:orientation="horizontal"
         android:padding="8dp">
 
@@ -41,8 +42,9 @@
                 android:id="@+id/description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxLines="7"
                 android:text="@{model.description}"
-                tools:text="Description\nDescription"/>
+                tools:text="Description\nDescription\nDescription"/>
         </LinearLayout>
 
     </LinearLayout>

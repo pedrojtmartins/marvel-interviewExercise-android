@@ -46,6 +46,13 @@ public class MainListAdapter extends ObservableAdapter<MarvelModel.Character> {
                 callback.onItemClick(currCharacter);
             }
         });
+        binding.getRoot().setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                callback.onItemLongClick(currCharacter);
+                return true;
+            }
+        });
 
         // Load thumbnails
         MarvelModel.Thumbnail thumbnail = currCharacter.thumbnail;

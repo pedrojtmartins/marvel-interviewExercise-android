@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
 import android.databinding.ObservableArrayList;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import pedrojtmartins.com.farfetchmarvel.interfaces.IDetailsCallback;
 import pedrojtmartins.com.farfetchmarvel.interfaces.IListCallback;
 import pedrojtmartins.com.farfetchmarvel.models.MainStatus;
 import pedrojtmartins.com.farfetchmarvel.models.MarvelModel;
+import pedrojtmartins.com.farfetchmarvel.sharedPreferences.SharedPreferencesManager;
 import pedrojtmartins.com.farfetchmarvel.viewmodels.MainViewModel;
 import pedrojtmartins.com.farfetchmarvel.views.fragments.DetailsFragment;
 import pedrojtmartins.com.farfetchmarvel.views.fragments.ListFragment;
@@ -27,12 +29,18 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
     private ActivityMainBinding binding;
     private MainViewModel viewModel;
 
+    private Fragment listFragment;
+    private Fragment filteredFragment;
+    private Fragment detailsFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
-        viewModel = new MainViewModel();
+        SharedPreferences sp = getSharedPreferences(SharedPreferencesManager.SHARED_PREFS, MODE_PRIVATE);
+        SharedPreferencesManager spManager = new SharedPreferencesManager(sp);
+        viewModel = new MainViewModel(spManager);
         viewModel.initialize();
 
         initializeListFragment();
@@ -49,7 +57,9 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                viewModel.loadFilteredCharacters(null);
+                viewModel.loadFilteredCharacters(null); // Clear the filter
+//                onBackPressed(); // The main list is on the stack. Just move back.
+                filteredFragment = null;
                 return false;
             }
         });
@@ -70,7 +80,7 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
     }
 
     private void initializeListFragment() {
-        Fragment listFragment = new ListFragment();
+        listFragment = new ListFragment();
         getFragmentManager().beginTransaction()
                 .add(R.id.fragment_container, listFragment)
                 .commit();
@@ -88,11 +98,16 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
     @Override
     public void onItemClick(MarvelModel.Character character) {
         viewModel.onCharacterSelected(character);
-        Fragment detailsFragment = new DetailsFragment();
+        detailsFragment = new DetailsFragment();
         getFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, detailsFragment)
                 .addToBackStack(null)
+                .setCustomAnimations(R.animator.in_from_right, R.animator.out_to_left)
+                .replace(R.id.fragment_container, detailsFragment)
                 .commit();
+    }
+    @Override
+    public void onItemLongClick(MarvelModel.Character character) {
+        viewModel.onCharacterLongPressed(character);
     }
     @Override
     public MainStatus getMainListBindable() {
@@ -114,7 +129,7 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
         return viewModel.getSelectedCharacter();
     }
     @Override
-    public ObservableArrayList getDetails(MarvelModel.Character character) {
-        return viewModel.getDetails(character);
+    public void getDetails(MarvelModel.Character character) {
+        viewModel.getDetails(character);
     }
 }
