@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import pedrojtmartins.com.farfetchmarvel.R;
 import pedrojtmartins.com.farfetchmarvel.databinding.ActivityMainBinding;
@@ -107,7 +108,7 @@ public class MainActivity extends Activity implements IListCallback, IDetailsCal
         viewModel.apiCallResult.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
             @Override
             public void onPropertyChanged(Observable sender, int propertyId) {
-//                Snackbar.make(binding.fragmentContainer, R.string.apiError, Snackbar.LENGTH_LONG).show();
+                Toast.makeText(binding.getRoot().getContext(), R.string.apiError, Toast.LENGTH_LONG).show();
             }
         });
     }
